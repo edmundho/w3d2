@@ -155,7 +155,7 @@ end
 class Reply 
   def self.all 
     q_data = QuestionsDatabase.instance.execute("SELECT * FROM replies")
-    q_data.map {|q_datum| Question.new(q_datum)}
+    q_data.map {|q_datum| Reply.new(q_datum)}
   end
   
   def self.find_by_user_id(user_id)
@@ -218,7 +218,7 @@ class Reply
     raise "#{self} already exists" if @id
     QuestionsDatabase.instance.execute(<<-SQL, @question_id, @user_id, @parent_id, @body)
       INSERT INTO 
-        questions (question_id, user_id, parent_id, body)
+        replies (question_id, user_id, parent_id, body)
       VALUES
         (?,?,?, ?)
     SQL
@@ -229,7 +229,7 @@ class Reply
     raise "#{self} does not exist" unless @id
     QuestionsDatabase.instance.execute(<<-SQL, @question_id, @user_id, @parent_id, @body)
     UPDATE 
-      questions 
+      replies 
     SET 
       question_id = ?,
       user_id = ?,
@@ -241,3 +241,23 @@ class Reply
   end
 end
 
+
+
+
+
+
+
+
+
+
+
+
+
+class QuestionFollow
+  def self.followers_for_question_id(question_id)
+    qf_data = QuestionsDatabase.instance.execute(<<-SQL)
+      -- SELECT
+      -- 
+    SQL
+  end
+end
