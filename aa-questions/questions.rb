@@ -11,6 +11,14 @@ class QuestionsDatabase < SQLite3::Database
   end
 end
 
+
+
+
+
+
+
+
+
 class User
   def self.all
     users = QuestionsDatabase.instance.execute("SELECT * FROM users")
@@ -18,13 +26,28 @@ class User
   end
   
   def self.find_by_name(fname, lname)
-    
+    name = QuestionsDatabase.instance.execute(<<-SQL)
+    SELECT
+     * 
+     FROM 
+     users 
+     WHERE fname = ? AND lname = ?
+     SQL
+     name.map { |user_datum| User.new(user_datum) }
   end
   
   def initialize(options)
     @id = options['id']
     @fname = options['fname']
     @lname = options['lname']
+  end
+  
+  def authored_questions
+    Question.find_by_author_id(@id)
+  end
+  
+  def authored_replies
+    Reply.find_by_user_id(@id)
   end
   
   def create
@@ -52,6 +75,16 @@ class User
   end
 end
 
+
+
+
+
+
+
+
+
+
+
 class Question 
   def self.all 
     q_data = QuestionsDatabase.instance.execute("SELECT * FROM questions")
@@ -67,6 +100,7 @@ class Question
       WHERE
         author_id = ?
     SQL
+    q_data.map {|q_datum| Question.new(q_datum)}
   end
   
   def initialize(options)
@@ -74,6 +108,14 @@ class Question
     @title = options['title']
     @body = options['body']
     @author_id = options['author_id']
+  end
+  
+  def author
+    @author_id
+  end
+  
+  def replies
+    Reply.find_by_question_id(@id)
   end
   
   def create
@@ -102,6 +144,14 @@ class Question
   end
 end
 
+
+
+
+
+
+
+
+
 class Reply 
   def self.all 
     q_data = QuestionsDatabase.instance.execute("SELECT * FROM replies")
@@ -117,6 +167,7 @@ class Reply
       WHERE
         user_id = ?
     SQL
+    r_data.map {|q_datum| Reply.new(q_datum)}
   end
   
   def self.find_by_question_id(question_id)
@@ -128,6 +179,7 @@ class Reply
       WHERE
         question_id = ?
     SQL
+    r_data.map {|q_datum| Reply.new(q_datum)}
   end  
   
   def initialize(options)
@@ -136,6 +188,30 @@ class Reply
     @user_id = options['user_id']
     @parent_id = options['parent_id']
     @body = options['body']
+  end
+  
+  def author
+    @user_id
+  end
+  
+  def question
+    @question_id
+  end
+  
+  def parent_reply
+    @parent_id
+  end
+  
+  def child_replies
+    children = QuestionsDatabase.instance.execute(<<-SQL, @id, @question_id)
+      SELECT
+        *
+      FROM 
+        replies
+      WHERE
+        parent_id = ? AND question_id = ?
+    SQL
+    children.map { |child| Reply.new(child) }
   end
   
   def create
@@ -165,6 +241,3 @@ class Reply
   end
 end
 
-class Like
-  
-end
