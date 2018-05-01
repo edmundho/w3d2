@@ -57,11 +57,13 @@ VALUES
 INSERT INTO questions
 (title, body, author_id)
 VALUES
-('Can''t breathe', 'Pls halp', 1)
-
-INSERT INTO replies
-(question_id, user_id, parent_id, body)
-VALUES
-(1, 4, , 'lol')
-(1, 3, , 'Try sleeping pills')
-(1, 4, 2, 'lol')
+('Can''t breathe', 'Pls halp', 1),
+('Can''t sleep', 'Why?', 1),
+('To be or not to be', '?', 3);
+-- 
+-- INSERT INTO replies
+-- (question_id, user_id, "SELECT id FROM replies WHERE question_id = ", body)
+-- VALUES
+-- (1, 4, , 'lol')
+-- (1, 3, , 'Try sleeping pills')
+-- (1, 4, 2, 'lol')
