@@ -43,7 +43,25 @@ class User
   end
   
   def average_karma
-    
+   #  select AVG() 
+   #  from 
+   #  questions join question_likes on 
+   # questions.id = question_likes.question_id
+   #  # join users on 
+   #  # questions.author_id = users.id
+   # where users.id = 1
+   # group by questions.id;
+   avg = QuestionsDatabase.instance.execute(<<-SQL, @id)
+        SELECT 
+          cast(count(*) AS FLOAT) / count(DISTINCT(questions.id))
+        FROM 
+          questions
+        LEFT OUTER JOIN question_likes ON questions.id = question_likes.question_id
+        WHERE
+          questions.author_id = ?
+      SQL
+      
+      avg.first.values.first
   end
   
   def followed_questions
