@@ -42,6 +42,10 @@ class User
     @lname = options['lname']
   end
   
+  def average_karma
+    
+  end
+  
   def followed_questions
     QuestionFollow.followed_questions_for_user_id(@id)
   end
@@ -52,6 +56,10 @@ class User
   
   def authored_replies
     Reply.find_by_user_id(@id)
+  end
+  
+  def liked_questions
+    liked_questions_for_user_id(@id)
   end
   
   def create
@@ -111,11 +119,23 @@ class Question
     QuestionFollow.most_followed_questions(n)
   end
   
+  def self.most_liked(n)
+    QuestionLike.most_liked_questions(n)
+  end
+  
   def initialize(options)
     @id = options['id']
     @title = options['title']
     @body = options['body']
     @author_id = options['author_id']
+  end
+  
+  def likers
+    QuestionLike.likers_for_question_id(@id)
+  end
+  
+  def num_likes
+    QuestionLike.num_likes_for_question_id(@id)
   end
   
   def followers
@@ -385,17 +405,34 @@ class QuestionLike
     SQL
     ql_data.values.first
   end
-  # def self.followed_questions_for_user_id(user_id)
-  #   qf_data = QuestionsDatabase.instance.execute(<<-SQL, user_id)
-  #     SELECT
-  #       questions.id, title, body, author_id
-  #     FROM
-  #       questions_follows
-  #     JOIN questions ON questions_follows.question_id = questions.id
-  #     WHERE questions_follows.user_id = ?
-  #   SQL
-  #   qf_data.map { |qf| Question.new(qf) }
-  # end
+  
+  def self.most_liked_questions(n)
+    ql_data = QuestionsDatabase.instance.execute(<<-SQL, n)
+      SELECT
+        questions.id, title, body, author_id
+      FROM
+        question_likes 
+      JOIN questions ON questions.id = question_likes.question_id
+      GROUP BY
+        question_id
+      ORDER BY
+        count(user_id) DESC
+      LIMIT ?
+    SQL
+    ql_data.map {|q| Question.new(q)}
+  end
+  
+  def self.liked_questions_for_user_id(user_id)
+    qf_data = QuestionsDatabase.instance.execute(<<-SQL, user_id)
+      SELECT
+        questions.id, title, body, author_id
+      FROM
+        question_likes
+      JOIN questions ON question_likes.question_id = questions.id
+      WHERE question_likes.user_id = ?
+    SQL
+    qf_data.map { |qf| Question.new(qf) }
+  end
   
   # def self.most_followed_questions(n)
   #   qf_data = QuestionsDatabase.instance.execute(<<-SQL, n)    
